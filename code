@@ -1,0 +1,77 @@
+%----------------------[Localization Problem]----------------------%
+clc
+clear all
+
+
+%Initial points:
+
+p_initial=[50 50 50]';
+
+
+%Beacons coordinates:
+
+coordinates=[
+    -6.0000000e+000 -2.0000000e+000  5.0000000e+000
+    3.0000000e+000  6.0000000e+000  1.0000000e+001
+    -1.1000000e+001  5.0000000e+000  9.0000000e+000
+    1.4000000e+001  1.7000000e+001 -1.0000000e+000
+    -8.0000000e+000  6.0000000e+000  7.0000000e+000
+    5.0000000e+000 -6.0000000e+000 -3.0000000e+000
+    2.0000000e+000  4.0000000e+000 -7.0000000e+000
+    -9.0000000e+000 -1.0000000e+001 -8.0000000e+000
+    1.0000000e+001  1.0000000e+001  1.1000000e+001
+    -1.0000000e+000  0.0000000e+000 -5.0000000e+000];
+
+
+p_beacons_x=coordinates(:,1);
+p_beacons_y=coordinates(:,2);
+p_beacons_z=coordinates(:,3);
+
+%Estimation of receiver location: 
+
+for i=0:1e2 %sufficient 
+    
+    
+    D0=sqrt((p_initial(1)-p_beacons_x).^2+(p_initial(2)-p_beacons_y).^2+...
+        (p_initial(3)-p_beacons_z).^2);
+    
+    
+    D_noisy_measured=  [1.3389827e+001 1.3893550e+001...
+        1.8899318e+001 1.8826371e+001...
+        1.5119894e+001 9.8974197e+000 3.4954952e+000 1.7352473e+001...
+        1.7748195e+001 4.8755977e+000]';
+    
+    
+    d1_derivative=(p_initial(1)-p_beacons_x)...
+        ./sqrt((p_initial(1)-p_beacons_x).^2+(p_initial(2)-p_beacons_y).^2+...
+        (p_initial(3)-p_beacons_z).^2);
+    
+    
+    d2_derivative=(p_initial(2)-p_beacons_y)...
+        ./sqrt((p_initial(1)-p_beacons_x).^2+(p_initial(2)-p_beacons_y).^2+...
+        (p_initial(3)-p_beacons_z).^2);
+    
+    
+    
+    d3_derivative=(p_initial(3)-p_beacons_z)...
+        ./sqrt((p_initial(1)-p_beacons_x).^2+(p_initial(2)-p_beacons_y).^2+...
+        (p_initial(3)-p_beacons_z).^2);
+    
+    
+    %System matrix:
+    
+    A=[d1_derivative d2_derivative d3_derivative];
+    
+    
+    %Estimation of delta:
+    
+    delta_points=inv(A'*A)*A'*(D_noisy_measured-D0);
+    
+    %Points update:
+    
+    p_initial=p_initial+delta_points;
+    
+     
+end
+
+Location_coordinates_estimate=p_initial
